@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="container">
+        <a href="/" id="logo" style="font-weight:bold; font-size:1.2rem;">DemoWeb_2</a>
+        <button onclick="toggleTheme()" class="btn" id="theme-btn">🌙</button>
+    </nav>
+    <main class="container">
+        <div id="posts-grid" class="grid">Memuat...</div>
+    </main>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        initApp();
+        document.getElementById('logo').innerText = CONFIG.SITE_NAME;
+        async function loadHome() {
+            const data = await fetchAllData();
+            const posts = data.filter(i => i.type === 'post' && i.status === 'Published');
+            const container = document.getElementById('posts-grid');
+            container.innerHTML = '';
+            posts.forEach(p => {
+                container.innerHTML += `
+                    <div class="card">
+                        <a href="/post/${p.slug}">
+                            ${p.image_url ? `<img src="${p.image_url}" style="height:150px; width:100%; object-fit:cover;">` : ''}
+                            <h3>${p.title}</h3>
+                        </a>
+                        <small>${p.date} • ${p.category}</small>
+                    </div>`;
+            });
+        }
+        loadHome();
+    </script>
+</body>
+</html>

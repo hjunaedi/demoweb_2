@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artikel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="container">
+        <a href="/">← Kembali</a>
+        <button onclick="toggleTheme()" class="btn" id="theme-btn">🌙</button>
+    </nav>
+    <main class="container">
+        <div id="loading">Memuat artikel...</div>
+        <article id="content" style="display:none;">
+            <span id="p-cat" class="badge"></span>
+            <h1 id="p-title"></h1>
+            <small id="p-date"></small>
+            <img id="p-img" src="" style="display:none; margin:20px 0;">
+            <div id="p-body"></div>
+        </article>
+    </main>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        initApp();
+        async function loadPost() {
+            const slug = window.location.pathname.split('/')[2];
+            const data = await fetchAllData();
+            const item = data.find(x => x.slug === slug && x.type === 'post');
+            
+            document.getElementById('loading').style.display = 'none';
+            if(item) {
+                document.title = item.title;
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('p-title').innerText = item.title;
+                document.getElementById('p-cat').innerText = item.category;
+                document.getElementById('p-date').innerText = item.date;
+                document.getElementById('p-body').innerHTML = item.content;
+                if(item.image_url) {
+                    document.getElementById('p-img').src = item.image_url;
+                    document.getElementById('p-img').style.display = 'block';
+                }
+            } else {
+                document.querySelector('main').innerHTML = "<h1>404 Artikel Tidak Ditemukan</h1>";
+            }
+        }
+        loadPost();
+    </script>
+</body>
+</html>
