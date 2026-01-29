@@ -8,37 +8,31 @@
 </head>
 <body>
     <nav class="container">
-        <a href="/" class="btn-back">← Home</a>
-        <button onclick="toggleTheme()" class="theme-btn" id="theme-btn">🌙</button>
+        <a href="/" style="font-weight:bold;">← Home</a>
+        <button onclick="toggleTheme()" class="btn" id="theme-btn">🌙</button>
     </nav>
 
     <main class="container">
-        <div id="loading" class="loading-spinner"></div>
-        
-        <article id="content" style="display:none; max-width: 800px; margin: 0 auto;">
-            <header style="margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
-                <h1 id="p-title" style="font-size: 2.2rem;"></h1>
-            </header>
-            
+        <div id="loading" class="spinner"></div>
+        <article id="content" style="display:none; max-width:800px; margin:0 auto;">
+            <h1 id="p-title" style="border-bottom:1px solid var(--border); padding-bottom:20px; margin-bottom:20px;"></h1>
             <div id="p-body" class="post-content"></div>
         </article>
     </main>
 
-    <footer style="text-align:center; padding: 40px 0; margin-top:50px;">
-        &copy; 2024 DemoWeb_2
-    </footer>
-
     <script src="/config.js"></script>
     <script src="/app.js"></script>
-
     <script>
         initApp();
-
         async function loadPage() {
-            const slug = window.location.pathname.split('/')[2];
+            const path = window.location.pathname.replace(/^\/|\/$/g, '');
+            const segments = path.split('/');
+            const slug = segments[segments.length - 1];
+
             const data = await fetchAllData();
+            // Cari data yang slug cocok DAN type='page'
             const item = data.find(x => x.slug === slug && x.type === 'page');
-            
+
             document.getElementById('loading').style.display = 'none';
 
             if(item) {
@@ -47,7 +41,7 @@
                 document.getElementById('p-title').innerText = item.title;
                 document.getElementById('p-body').innerHTML = item.content;
             } else {
-                document.querySelector('main').innerHTML = "<div style='text-align:center'><h1>404</h1><p>Halaman tidak ditemukan.</p></div>";
+                document.querySelector('main').innerHTML = "<h1 style='text-align:center'>404 Halaman Tidak Ditemukan</h1>";
             }
         }
         loadPage();

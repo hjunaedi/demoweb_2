@@ -3,117 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Membaca Artikel...</title>
+    <title>Artikel</title>
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
-    <div id="progress-bar" style="position:fixed; top:0; left:0; height:4px; background:var(--primary); width:0%; z-index:999;"></div>
-
     <nav class="container">
-        <a href="/" class="btn-back">← Kembali</a>
-        <button onclick="toggleTheme()" class="theme-btn" id="theme-btn">🌙</button>
+        <a href="/" style="font-weight:bold;">← Kembali</a>
+        <button onclick="toggleTheme()" class="btn" id="theme-btn">🌙</button>
     </nav>
 
     <main class="container">
-        <div id="loading" class="loading-spinner"></div>
+        <div id="loading" class="spinner"></div>
         
-        <article id="content" style="display:none; max-width: 800px; margin: 0 auto;">
+        <article id="content" style="display:none; max-width:800px; margin:0 auto;">
             <header class="post-header">
-                <span id="p-cat" class="badge">Kategori</span>
-                <h1 id="p-title" class="post-title"></h1>
-                <div style="color:var(--text-muted);">
-                    <span id="p-date"></span> • <span id="p-read"></span>
-                </div>
+                <span id="p-cat" class="badge"></span>
+                <h1 id="p-title" style="margin:15px 0; font-size:2rem;"></h1>
+                <span id="p-date" class="meta"></span>
             </header>
-            
-            <img id="p-img" src="" style="display:none; width:100%; border-radius:12px; margin-bottom:40px; box-shadow:var(--shadow);">
-            
-            <div id="ad-top" style="margin-bottom:30px;"></div>
 
+            <img id="p-img" src="" style="display:none; width:100%; margin-bottom:30px;">
             <div id="p-body" class="post-content"></div>
-
-            <div id="ad-bottom" style="margin-top:30px;"></div>
         </article>
     </main>
 
-    <footer style="text-align:center; padding: 40px 0; margin-top:50px; border-top:1px solid var(--border);">
-        &copy; 2024 DemoWeb_2
-    </footer>
-
     <script src="/config.js"></script>
     <script src="/app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
     <script>
         initApp();
 
         async function loadPost() {
-            // Ambil slug dari URL path ke-2
-            const slug = window.location.pathname.split('/')[2];
+            // Ambil Slug (Membuang tanda / di awal/akhir)
+            const path = window.location.pathname.replace(/^\/|\/$/g, '');
+            const segments = path.split('/');
+            const slug = segments[segments.length - 1]; // Ambil bagian paling belakang
+
             const data = await fetchAllData();
+            // Cari data yang slug cocok DAN type='post'
             const item = data.find(x => x.slug === slug && x.type === 'post');
-            
+
             document.getElementById('loading').style.display = 'none';
 
             if(item) {
                 document.title = item.title;
                 document.getElementById('content').style.display = 'block';
-                
-                // Render Meta
                 document.getElementById('p-title').innerText = item.title;
-                document.getElementById('p-cat').innerText = item.category || 'Blog';
+                document.getElementById('p-cat').innerText = item.category;
                 document.getElementById('p-date').innerText = item.date;
-
-                // Render Gambar
+                document.getElementById('p-body').innerHTML = item.content;
+                
                 if(item.image_url) {
                     document.getElementById('p-img').src = item.image_url;
                     document.getElementById('p-img').style.display = 'block';
                 }
-
-                // Render HTML Body
-                const body = document.getElementById('p-body');
-                body.innerHTML = item.content;
-
-                // Hitung Waktu Baca
-                const wordCount = item.content.replace(/<[^>]*>/g, '').split(' ').length;
-                document.getElementById('p-read').innerText = Math.ceil(wordCount / 200) + " min baca";
-
-                // Generate Daftar Isi (TOC)
-                const headers = body.querySelectorAll('h2, h3');
-                if(headers.length > 0) {
-                    let tocHTML = '<div class="toc"><strong>Daftar Isi:</strong><ul>';
-                    headers.forEach((h, i) => {
-                        h.id = 'section-' + i;
-                        tocHTML += `<li><a href="#section-${i}">${h.innerText}</a></li>`;
-                    });
-                    tocHTML += '</ul></div>';
-                    // Sisipkan setelah paragraf pertama
-                    const firstP = body.querySelector('p');
-                    if(firstP) firstP.insertAdjacentHTML('afterend', tocHTML);
-                }
-
-                // Iklan Dummy (Jika Aktif)
-                if(CONFIG.ADS_ENABLED) {
-                    const adHTML = '<div style="background:var(--border); padding:20px; text-align:center; border-radius:8px; font-size:0.8rem;">Space Iklan</div>';
-                    document.getElementById('ad-top').innerHTML = adHTML;
-                    document.getElementById('ad-bottom').innerHTML = adHTML;
-                }
-
-                hljs.highlightAll(); // Syntax Highlight
             } else {
-                document.querySelector('main').innerHTML = "<div style='text-align:center'><h1>404</h1><p>Artikel tidak ditemukan.</p><a href='/' class='btn-back'>Kembali Home</a></div>";
+                document.querySelector('main').innerHTML = "<h1 style='text-align:center'>404 Artikel Tidak Ditemukan</h1>";
             }
         }
-
-        // Scroll Bar Logic
-        window.onscroll = function() {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (winScroll / height) * 100;
-            document.getElementById("progress-bar").style.width = scrolled + "%";
-        };
-
         loadPost();
     </script>
 </body>

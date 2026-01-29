@@ -1,72 +1,54 @@
-// --- LOGIKA FETCH DATA ---
+// --- 1. Fetch Data ---
 async function fetchAllData() {
     try {
-        if (CONFIG.DATA_SOURCE === 'api') {
-            const response = await fetch(CONFIG.API_URL);
-            return await response.json();
-        } else {
-            const response = await fetch(CONFIG.CSV_URL);
-            const csvText = await response.text();
-            return parseCSV(csvText);
-        }
-    } catch (error) {
-        console.error("Error Fetching Data:", error);
+        const response = await fetch(CONFIG.CSV_URL);
+        const text = await response.text();
+        return parseCSV(text);
+    } catch (e) {
+        console.error("Gagal ambil data:", e);
         return [];
     }
 }
 
-// --- CSV PARSER (JANGAN DIUBAH) ---
-function parseCSV(csvText) {
-    const lines = [];
-    let currentRow = [];
-    let currentCell = '';
-    let insideQuotes = false;
-    for (let i = 0; i < csvText.length; i++) {
-        const char = csvText[i];
-        const nextChar = csvText[i + 1];
-        if (char === '"' && insideQuotes && nextChar === '"') { currentCell += '"'; i++; }
-        else if (char === '"') { insideQuotes = !insideQuotes; }
-        else if (char === ',' && !insideQuotes) { currentRow.push(currentCell); currentCell = ''; }
-        else if ((char === '\r' || char === '\n') && !insideQuotes) {
-            if (char === '\r' && nextChar === '\n') i++;
-            if (currentCell || currentRow.length > 0) currentRow.push(currentCell);
-            if (currentRow.length > 0) lines.push(currentRow);
-            currentRow = []; currentCell = '';
-        } else { currentCell += char; }
+// --- 2. Parser CSV (JANGAN DIUBAH) ---
+function parseCSV(csv) {
+    const lines = []; let row = []; let cell = ''; let quote = false;
+    for (let i = 0; i < csv.length; i++) {
+        let c = csv[i], n = csv[i+1];
+        if (c === '"' && quote && n === '"') { cell += '"'; i++; }
+        else if (c === '"') { quote = !quote; }
+        else if (c === ',' && !quote) { row.push(cell); cell = ''; }
+        else if ((c === '\r' || c === '\n') && !quote) {
+            if (c === '\r' && n === '\n') i++;
+            if (cell || row.length) row.push(cell);
+            if (row.length) lines.push(row);
+            row = []; cell = '';
+        } else { cell += c; }
     }
-    if (currentCell || currentRow.length > 0) currentRow.push(currentCell);
-    if (currentRow.length > 0) lines.push(currentRow);
-    
+    if (cell || row.length) row.push(cell);
+    if (row.length) lines.push(row);
     const headers = lines[0].map(h => h.trim());
-    return lines.slice(1).map(line => {
-        let obj = {};
-        headers.forEach((h, i) => obj[h] = line[i] || '');
-        return obj;
+    return lines.slice(1).map(r => {
+        let obj = {}; headers.forEach((h, i) => obj[h] = r[i] || ''); return obj;
     });
 }
 
-// --- TEMA & UI ---
+// --- 3. UI & Utility ---
 function initApp() {
     document.body.setAttribute('data-color', CONFIG.THEME_COLOR);
-    const savedTheme = localStorage.getItem('theme');
-    
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.body.setAttribute('data-theme', 'dark');
-        updateThemeIcon(true);
-    } else {
-        updateThemeIcon(false);
-    }
+    const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.body.setAttribute('data-theme', theme);
+    updateIcon(theme === 'dark');
 }
 
 function toggleTheme() {
     const isDark = document.body.getAttribute('data-theme') === 'dark';
-    const newTheme = isDark ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(!isDark);
+    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    updateIcon(!isDark);
 }
 
-function updateThemeIcon(isDark) {
+function updateIcon(isDark) {
     const btn = document.getElementById('theme-btn');
-    if(btn) btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> ☀️' : '<i class="fas fa-moon"></i> 🌙';
+    if(btn) btn.innerText = isDark ? '☀️' : '🌙';
 }
