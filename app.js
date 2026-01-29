@@ -1,3 +1,4 @@
+// --- LOGIKA FETCH DATA ---
 async function fetchAllData() {
     try {
         if (CONFIG.DATA_SOURCE === 'api') {
@@ -9,11 +10,12 @@ async function fetchAllData() {
             return parseCSV(csvText);
         }
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error Fetching Data:", error);
         return [];
     }
 }
 
+// --- CSV PARSER (JANGAN DIUBAH) ---
 function parseCSV(csvText) {
     const lines = [];
     let currentRow = [];
@@ -43,17 +45,28 @@ function parseCSV(csvText) {
     });
 }
 
+// --- TEMA & UI ---
 function initApp() {
     document.body.setAttribute('data-color', CONFIG.THEME_COLOR);
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.body.setAttribute('data-theme', 'dark');
-        if(document.getElementById('theme-btn')) document.getElementById('theme-btn').innerText = '☀️';
+        updateThemeIcon(true);
+    } else {
+        updateThemeIcon(false);
     }
 }
 
 function toggleTheme() {
     const isDark = document.body.getAttribute('data-theme') === 'dark';
-    document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    if(document.getElementById('theme-btn')) document.getElementById('theme-btn').innerText = isDark ? '🌙' : '☀️';
+    const newTheme = isDark ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(!isDark);
+}
+
+function updateThemeIcon(isDark) {
+    const btn = document.getElementById('theme-btn');
+    if(btn) btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> ☀️' : '<i class="fas fa-moon"></i> 🌙';
 }

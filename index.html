@@ -4,34 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <nav class="container">
-        <a href="/" id="logo" style="font-weight:bold; font-size:1.2rem;">DemoWeb_2</a>
-        <button onclick="toggleTheme()" class="btn" id="theme-btn">🌙</button>
+        <a href="/" class="logo" id="logo">Loading...</a>
+        <button onclick="toggleTheme()" class="theme-btn" id="theme-btn">🌙</button>
     </nav>
+
+    <header class="container">
+        <div class="hero">
+            <h1>Selamat Datang</h1>
+            <p id="site-desc">Website serverless modern, cepat, dan hemat biaya.</p>
+        </div>
+    </header>
+
     <main class="container">
-        <div id="posts-grid" class="grid">Memuat...</div>
+        <div id="loading" class="loading-spinner"></div>
+        <div id="posts-grid" class="grid"></div>
     </main>
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+
+    <footer style="text-align:center; padding: 40px 0; color: var(--text-muted);">
+        &copy; 2024 DemoWeb_2. All rights reserved.
+    </footer>
+
+    <script src="/config.js"></script>
+    <script src="/app.js"></script>
+
     <script>
         initApp();
         document.getElementById('logo').innerText = CONFIG.SITE_NAME;
+        document.getElementById('site-desc').innerText = CONFIG.SITE_DESC;
+
         async function loadHome() {
             const data = await fetchAllData();
+            // Filter: Hanya tipe post dan status Published
             const posts = data.filter(i => i.type === 'post' && i.status === 'Published');
+            
             const container = document.getElementById('posts-grid');
-            container.innerHTML = '';
+            document.getElementById('loading').style.display = 'none';
+
+            if(posts.length === 0) {
+                container.innerHTML = "<p style='text-align:center; width:100%;'>Belum ada artikel yang dipublikasikan.</p>";
+                return;
+            }
+
             posts.forEach(p => {
                 container.innerHTML += `
                     <div class="card">
                         <a href="/post/${p.slug}">
-                            ${p.image_url ? `<img src="${p.image_url}" style="height:150px; width:100%; object-fit:cover;">` : ''}
-                            <h3>${p.title}</h3>
+                            ${p.image_url ? `<img src="${p.image_url}" class="card-img" alt="${p.title}" onerror="this.style.display='none'">` : ''}
+                            <div class="card-body">
+                                <span class="card-meta">${p.date} • ${p.category}</span>
+                                <h3>${p.title}</h3>
+                            </div>
                         </a>
-                        <small>${p.date} • ${p.category}</small>
                     </div>`;
             });
         }

@@ -4,37 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halaman</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <nav class="container">
-        <a href="/">← Home</a>
-        <button onclick="toggleTheme()" class="btn" id="theme-btn">🌙</button>
+        <a href="/" class="btn-back">← Home</a>
+        <button onclick="toggleTheme()" class="theme-btn" id="theme-btn">🌙</button>
     </nav>
+
     <main class="container">
-        <div id="loading">Memuat...</div>
-        <article id="content" style="display:none;">
-            <h1 id="p-title" style="border-bottom:1px solid var(--border); padding-bottom:10px;"></h1>
-            <div id="p-body" style="margin-top:20px;"></div>
+        <div id="loading" class="loading-spinner"></div>
+        
+        <article id="content" style="display:none; max-width: 800px; margin: 0 auto;">
+            <header style="margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
+                <h1 id="p-title" style="font-size: 2.2rem;"></h1>
+            </header>
+            
+            <div id="p-body" class="post-content"></div>
         </article>
     </main>
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+
+    <footer style="text-align:center; padding: 40px 0; margin-top:50px;">
+        &copy; 2024 DemoWeb_2
+    </footer>
+
+    <script src="/config.js"></script>
+    <script src="/app.js"></script>
+
     <script>
         initApp();
+
         async function loadPage() {
             const slug = window.location.pathname.split('/')[2];
             const data = await fetchAllData();
             const item = data.find(x => x.slug === slug && x.type === 'page');
             
             document.getElementById('loading').style.display = 'none';
+
             if(item) {
                 document.title = item.title;
                 document.getElementById('content').style.display = 'block';
                 document.getElementById('p-title').innerText = item.title;
                 document.getElementById('p-body').innerHTML = item.content;
             } else {
-                document.querySelector('main').innerHTML = "<h1>404 Halaman Tidak Ditemukan</h1>";
+                document.querySelector('main').innerHTML = "<div style='text-align:center'><h1>404</h1><p>Halaman tidak ditemukan.</p></div>";
             }
         }
         loadPage();
